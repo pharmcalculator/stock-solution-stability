@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Stability Calculation</title>
+<style>
+    body {
+      font-family: Arial, sans-serif;
+      text-align: center;
+    }
+
+    h1 {
+      font-size: 28px;
+      margin-bottom: 20px;
+    }
+
+    h2 {
+      font-size: 28px;
+      margin-top: 40px;
+      margin-bottom: 10px;
+    }
+
+    .container {
+      display: flex;
+      justify-content: center;
+      align-items: flex-start;
+    }
+
+    .table-container {
+      margin: 0 20px;
+    }
+
+    table {
+      margin: 0 auto;
+      border-collapse: collapse
+      width: 600px;
+    }
+
+    th, td {
+      padding: 8px;
+      text-align: left;
+    }
+
+    th {
+      background-color: #f2f2f2;
+    }
+
+    input[type="number"] {
+      width: 100px;
+      font-size: 20px;
+    }
+
+    button {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 28px;
+      background-color: #4CAF50;
+      color: white;
+      border: none;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #45a049;
+    }
+
+    .result-table {
+      margin-top: 20px;
+      margin-bottom: 20px;
+      font-size: 24px;
+    }
+
+    .result-table th {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    .result-table td {
+      padding: 20px;
+    }
+
+    p {
+      font-size: 24px;
+    }
+  </style>
+  <script>
+    function calculateStability() {
+      // Get input values
+      var trueConcentrationHighQC = parseFloat(document.getElementById("trueConcentrationHighQC").value);
+      var trueConcentrationMediumQC = parseFloat(document.getElementById("trueConcentrationMediumQC").value);
+      var trueConcentrationLowQC = parseFloat(document.getElementById("trueConcentrationLowQC").value);
+
+      // Perform stability calculations for High QC
+      var measuredConcentrationsHighQC = [];
+      for (var i = 1; i <= 3; i++) {
+        measuredConcentrationsHighQC.push(parseFloat(document.getElementById("measuredConcentrationHighQC" + i).value));
+      }
+      var accuraciesHighQC = [];
+      for (var i = 0; i < measuredConcentrationsHighQC.length; i++) {
+        var accuracy = (measuredConcentrationsHighQC[i] / trueConcentrationHighQC) * 100;
+        accuraciesHighQC.push(accuracy);
+      }
+      var meanAccuracyHighQC = accuraciesHighQC.reduce(function(a, b) { return a + b; }, 0) / accuraciesHighQC.length;
+      var standardDeviationHighQC = calculateStandardDeviation(accuraciesHighQC);
+      var cvHighQC = (standardDeviationHighQC / meanAccuracyHighQC) * 100;
+
+      // Update High QC table with results
+      document.getElementById("meanAccuracyHighQC").textContent = meanAccuracyHighQC.toFixed(2) + "%";
+      document.getElementById("standardDeviationHighQC").textContent = standardDeviationHighQC.toFixed(2);
+      document.getElementById("cvHighQC").textContent = cvHighQC.toFixed(2) + "%";
+
+      // Perform stability calculations for Medium QC
+      var measuredConcentrationsMediumQC = [];
+      for (var i = 1; i <= 3; i++) {
+        measuredConcentrationsMediumQC.push(parseFloat(document.getElementById("measuredConcentrationMediumQC" + i).value));
+      }
+      var accuraciesMediumQC = [];
+      for (var i = 0; i < measuredConcentrationsMediumQC.length; i++) {
+        var accuracy = (measuredConcentrationsMediumQC[i] / trueConcentrationMediumQC) * 100;
+        accuraciesMediumQC.push(accuracy);
+      }
+      var meanAccuracyMediumQC = accuraciesMediumQC.reduce(function(a, b) { return a + b; }, 0) / accuraciesMediumQC.length;
+      var standardDeviationMediumQC = calculateStandardDeviation(accuraciesMediumQC);
+      var cvMediumQC = (standardDeviationMediumQC / meanAccuracyMediumQC) * 100;
+
+      // Update Medium QC table with results
+      document.getElementById("meanAccuracyMediumQC").textContent = meanAccuracyMediumQC.toFixed(2) + "%";
+      document.getElementById("standardDeviationMediumQC").textContent = standardDeviationMediumQC.toFixed(2);
+      document.getElementById("cvMediumQC").textContent = cvMediumQC.toFixed(2) + "%";
+
+      // Perform stability calculations for Low QC
+      var measuredConcentrationsLowQC = [];
+      for (var i = 1; i <= 3; i++) {
+        measuredConcentrationsLowQC.push(parseFloat(document.getElementById("measuredConcentrationLowQC" + i).value));
+      }
+      var accuraciesLowQC = [];
+      for (var i = 0; i < measuredConcentrationsLowQC.length; i++) {
+        var accuracy = (measuredConcentrationsLowQC[i] / trueConcentrationLowQC) * 100;
+        accuraciesLowQC.push(accuracy);
+      }
+      var meanAccuracyLowQC = accuraciesLowQC.reduce(function(a, b) { return a + b; }, 0) / accuraciesLowQC.length;
+      var standardDeviationLowQC = calculateStandardDeviation(accuraciesLowQC);
+      var cvLowQC = (standardDeviationLowQC / meanAccuracyLowQC) * 100;
+
+      // Update Low QC table with results
+      document.getElementById("meanAccuracyLowQC").textContent = meanAccuracyLowQC.toFixed(2) + "%";
+      document.getElementById("standardDeviationLowQC").textContent = standardDeviationLowQC.toFixed(2);
+      document.getElementById("cvLowQC").textContent = cvLowQC.toFixed(2) + "%";
+    }
+
+    function calculateStandardDeviation(values) {
+      var mean = values.reduce(function(a, b) { return a + b; }, 0) / values.length;
+      var squaredDeviations = values.map(function(value) { return Math.pow(value - mean, 2); });
+      var variance = squaredDeviations.reduce(function(a, b) { return a + b; }, 0) / squaredDeviations.length;
+      var standardDeviation = Math.sqrt(variance);
+      return standardDeviation;
+    }
+  </script>
+</head>
+<body>
+  <h1>Stock solution stability Calculation</h1>
+<!-- Added paragraph -->
+  <p>The FDA requires that stock solutions should not be made from reference materials that are about to expire unless the purity of the analyte in the stock solutions is reestablished. When the stock solution exists in a different state (e.g., solution versus solid) or in a different buffer composition (which is generally the case for macromolecules) from the certified reference standard, the sponsor should generate stability data on stock solutions to justify the duration of stock solution storage stability.
+  <div class="container">
+    <div class="table-container">
+      <h2>High QC</h2>
+      <table>
+        <tr>
+          <th>True Concentration</th>
+          <th>Measured Concentration 1</th>
+          <th>Measured Concentration 2</th>
+          <th>Measured Concentration 3</th>
+        </tr>
+        <tr>
+          <td><input type="text" id="trueConcentrationHighQC" class="highlight"></td>
+          <td><input type="number" id="measuredConcentrationHighQC1"></td>
+          <td><input type="number" id="measuredConcentrationHighQC2"></td>
+          <td><input type="number" id="measuredConcentrationHighQC3"></td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="table-container">
+      <h2>Medium QC</h2>
+      <table>
+        <tr>
+          <th>True Concentration</th>
+          <th>Measured Concentration 1</th>
+          <th>Measured Concentration 2</th>
+          <th>Measured Concentration 3</th>
+        </tr>
+        <tr>
+          <td><input type="text" id="trueConcentrationMediumQC" class="highlight"></td>
+          <td><input type="number" id="measuredConcentrationMediumQC1"></td>
+          <td><input type="number" id="measuredConcentrationMediumQC2"></td>
+          <td><input type="number" id="measuredConcentrationMediumQC3"></td>
+        </tr>
+      </table>
+    </div>
+
+    <div class="table-container">
+      <h2>Low QC</h2>
+      <table>
+        <tr>
+          <th>True Concentration</th>
+          <th>Measured Concentration 1</th>
+          <th>Measured Concentration 2</th>
+          <th>Measured Concentration 3</th>
+        </tr>
+        <tr>
+          <td><input type="text" id="trueConcentrationLowQC" class="highlight"></td>
+          <td><input type="number" id="measuredConcentrationLowQC1"></td>
+          <td><input type="number" id="measuredConcentrationLowQC2"></td>
+          <td><input type="number" id="measuredConcentrationLowQC3"></td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <button onclick="calculateStability()">Calculate</button>
+
+  <div class="result-table">
+    <table>
+      <tr>
+        <th>QC Level</th>
+        <th>Mean Accuracy</th>
+        <th>Standard Deviation</th>
+        <th>CV (%)</th>
+      </tr>
+      <tr>
+        <td>High QC</td>
+        <td id="meanAccuracyHighQC"></td>
+        <td id="standardDeviationHighQC"></td>
+        <td id="cvHighQC"></td>
+      </tr>
+      <tr>
+        <td>Medium QC</td>
+        <td id="meanAccuracyMediumQC"></td>
+        <td id="standardDeviationMediumQC"></td>
+        <td id="cvMediumQC"></td>
+      </tr>
+      <tr>
+        <td>Low QC</td>
+        <td id="meanAccuracyLowQC"></td>
+        <td id="standardDeviationLowQC"></td>
+        <td id="cvLowQC"></td>
+      </tr>
+    </table>
+  </div>  
+</body>
+</html>
